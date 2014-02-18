@@ -22,7 +22,7 @@ public class CPUScheduler {
 	/**
 	 * The default number of processes to randomly generate. The programmer can
 	 * use the articulate constructor to build their own process set of any
-	 * lenghth
+	 * length.
 	 */
 	private static final int DEF_PROC_COUNT = 50;
 
@@ -184,7 +184,7 @@ public class CPUScheduler {
 			activeJob.executing(currentTime);
 		for (int i = 0; i < readyQueue.size(); ++i) {
 			p = (Process) readyQueue.get(i);
-			if (activeJob == null || p.getPID() != activeJob.getPID()) {
+			if (!p.equals(activeJob)) {
 				p.waiting(currentTime);
 			}
 		}
