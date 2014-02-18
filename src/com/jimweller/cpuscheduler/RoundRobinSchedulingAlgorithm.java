@@ -32,6 +32,11 @@ public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm {
 
     /** Returns true if the job was present and was removed. */
     public boolean removeJob(Process p) {
+    	if(activeJob != null && activeJob.equals(p))
+    	{
+    		activeJob = null;
+    		return true;
+    	}
     	return processes.remove(p);
     }
 
