@@ -107,6 +107,10 @@ public class Process{
 	priority = p;
     }
 
+    public boolean equals(Object object)
+    {
+    	return object instanceof Process && ((Process)object).PID == PID;
+    }
 
     /**
      * Go through the motions of running one cycle on a process. 
