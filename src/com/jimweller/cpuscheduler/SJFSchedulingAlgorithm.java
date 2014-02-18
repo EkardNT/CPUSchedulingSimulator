@@ -59,9 +59,9 @@ public class SJFSchedulingAlgorithm extends BaseSchedulingAlgorithm implements O
     		activeJob = minHeap.poll();
     	else if(activeJob.isFinished())
     		activeJob = minHeap.poll();
-    	else if(preemptive 
+    	else if(preemptive
     			&& (minHeap.size() > 0) 
-    			&& (activeJob.burst > minHeap.element().burst))
+    			&& (activeJob.getBurstTime() > minHeap.element().getBurstTime()))
     	{
     		minHeap.add(activeJob);
     		activeJob = minHeap.poll();
