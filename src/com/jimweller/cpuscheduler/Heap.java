@@ -2,46 +2,48 @@ package com.jimweller.cpuscheduler;
 
 import java.util.Iterator;
 
-public class MaxHeap implements Iterable<Process> {
+public class Heap<T> implements Iterable<T> {
 
-	private Process[] heap;
+	private final HeapOrderer<T> orderer;
+	private Object[] backingArray;
 	private int firstEmptySlot;
 	
-	public MaxHeap()
+	public Heap(HeapOrderer<T> orderer)
 	{
-		heap = new Process[16];
+		this.orderer = orderer;
+		backingArray = new Object[16]; // Curse you type erasure!!!
 		firstEmptySlot = 0;
 	}
 	
-	public void add(Process process)
+	public void add(T T)
 	{
-		if(process == null)
+		if(T == null)
 			throw new NullPointerException();
 		int destinationSlot = firstEmptySlot;
 		firstEmptySlot++;
 		ensureCapacity(destinationSlot);
-		heap[destinationSlot] = process;
+		backingArray[destinationSlot] = T;
 		walkUp(destinationSlot);
 	}
 	
-	public boolean remove(Process process)
+	public boolean remove(T T)
 	{
-		if(process == null)
+		if(T == null)
 			return false;
 		
-		if(size() == 1 && process.equals(heap[0]))
+		if(size() == 1 && T.equals(backingArray[0]))
 		{
-			heap[0] = null;
+			backingArray[0] = null;
 			firstEmptySlot = 0;
 			return true;
 		}
 		
 		for(int i = 0; i < firstEmptySlot; i++)
 		{
-			if(heap[i].equals(process))
+			if(backingArray[i].equals(T))
 			{
-				heap[i] = heap[firstEmptySlot - 1];
-				heap[firstEmptySlot - 1] = null;
+				backingArray[i] = backingArray[firstEmptySlot - 1];
+				backingArray[firstEmptySlot - 1] = null;
 				firstEmptySlot--;
 				walkUp(i);
 				walkDown(i);
@@ -52,18 +54,18 @@ public class MaxHeap implements Iterable<Process> {
 		return false;
 	}
 	
-	public Process peekMax()
+	public T peekMax()
 	{
 		if(firstEmptySlot <= 0)
 			return null;
-		return heap[0];
+		return (T)backingArray[0];
 	}
 	
-	public Process popMax()
+	public T popMax()
 	{
 		if(firstEmptySlot <= 0)
 			return null;
-		Process max = heap[0];
+		T max = (T)backingArray[0];
 		remove(max);
 		return max;
 	}
@@ -101,18 +103,18 @@ public class MaxHeap implements Iterable<Process> {
 			// Are both child slots full?
 			if(right < firstEmptySlot)
 			{
-				int maxSlot = slotWithMaxPriority(current, left, right);
-				if(maxSlot == current)
+				int orderedFirstSlot = findSlotThatShouldBeOrderedFirst(current, left, right);
+				if(orderedFirstSlot == current)
 					return current;
-				swap(current, maxSlot);
-				current = maxSlot;
+				swap(current, orderedFirstSlot);
+				current = orderedFirstSlot;
 				left = leftChildSlot(current);
 				right = leftChildSlot(current);
 			}
 			// Or is only the left slot full?
 			else
 			{
-				if(heap[current].priority > heap[left].priority)
+				if(orderer.isOrdered((T)backingArray[current], (T)backingArray[left]))
 					return current;
 				swap(current, left);
 				return left;
@@ -121,16 +123,16 @@ public class MaxHeap implements Iterable<Process> {
 		return current;
 	}
 	
-	private int slotWithMaxPriority(int parentSlot, int leftSlot, int rightSlot)
+	private int findSlotThatShouldBeOrderedFirst(int parentSlot, int leftSlot, int rightSlot)
 	{
-		if(heap[parentSlot].priority > heap[leftSlot].priority)
+		if(orderer.isOrdered((T)backingArray[parentSlot], (T)backingArray[leftSlot]))
 		{
-			if(heap[parentSlot].priority > heap[rightSlot].priority)
+			if(orderer.isOrdered((T)backingArray[parentSlot], (T)backingArray[rightSlot]))
 				return parentSlot;
 			else
 				return rightSlot;
 		}
-		else if(heap[leftSlot].priority > heap[rightSlot].priority)
+		else if(orderer.isOrdered((T)backingArray[leftSlot], (T)backingArray[rightSlot]))
 			return leftSlot;
 		else 
 			return rightSlot;
@@ -138,19 +140,19 @@ public class MaxHeap implements Iterable<Process> {
 	
 	private void swap(int slotA, int slotB)
 	{
-		Process temp = heap[slotA];
-		heap[slotA] = heap[slotB];
-		heap[slotB] = temp;
+		Object temp = backingArray[slotA];
+		backingArray[slotA] = backingArray[slotB];
+		backingArray[slotB] = temp;
 	}
 	
 	private void ensureCapacity(int desiredCapacity)
 	{
-		if(heap.length >= desiredCapacity)
+		if(backingArray.length >= desiredCapacity)
 			return;
-		Process[] newHeap = new Process[Math.max(desiredCapacity, heap.length * 2)];
-		for(int i = 0; i < heap.length; i++)
-			newHeap[i] = heap[i];
-		heap = newHeap;
+		Object[] newHeap = new Object[Math.max(desiredCapacity, backingArray.length * 2)];
+		for(int i = 0; i < backingArray.length; i++)
+			newHeap[i] = backingArray[i];
+		backingArray = newHeap;
 	}
 	
 	private int parentSlot(int childSlot)
@@ -169,7 +171,7 @@ public class MaxHeap implements Iterable<Process> {
 	}
 
 	@Override
-	public Iterator<Process> iterator() {
-		return new ArrayIterator<Process>(heap);
+	public Iterator<T> iterator() {
+		return new ArrayIterator<T>((T[])backingArray);
 	}
 }
