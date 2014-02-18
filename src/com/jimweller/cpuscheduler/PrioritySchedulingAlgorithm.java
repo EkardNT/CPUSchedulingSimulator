@@ -8,18 +8,21 @@
  */
 package com.jimweller.cpuscheduler;
 
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
 public class PrioritySchedulingAlgorithm extends BaseSchedulingAlgorithm implements OptionallyPreemptiveSchedulingAlgorithm {
     private boolean preemptive;
     // Processes ordered with highest priority first.
-    private Heap<Process> maxHeap;
+    private PriorityQueue<Process> maxHeap;
 
     PrioritySchedulingAlgorithm(){
     	preemptive = false;
-    	maxHeap = new Heap<Process>(new HeapOrderer<Process>() { 
-			public boolean isOrdered(Process expectedBefore, Process expectedAfter) {
-				return expectedBefore.priority >= expectedAfter.priority;
-			}
-		});
+    	maxHeap = new PriorityQueue<Process>(10, new Comparator<Process>() {
+    		public int compare(Process p1, Process p2) {
+    			return (int)(p2.priority - p1.priority);
+    		}
+    	});
     }
 
     /** Add the new job to the correct queue.*/
@@ -52,7 +55,7 @@ public class PrioritySchedulingAlgorithm extends BaseSchedulingAlgorithm impleme
     /** Returns the next process that should be run by the CPU, null if none available.*/
     public Process getNextJob(long currentTime){
     	if(activeJob == null || preemptive || activeJob.isFinished())
-    		activeJob = maxHeap.popMax();
+    		activeJob = maxHeap.poll();
     	return activeJob;
     }
 

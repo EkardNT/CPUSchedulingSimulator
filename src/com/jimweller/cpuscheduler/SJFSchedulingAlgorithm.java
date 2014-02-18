@@ -16,15 +16,14 @@ import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
 public class SJFSchedulingAlgorithm extends BaseSchedulingAlgorithm implements OptionallyPreemptiveSchedulingAlgorithm {
     private boolean preemptive;
     // Processes ordered with lowest burst time first.
-    private final Heap<Process> minHeap;
+    private final PriorityQueue<Process> minHeap;
 
     SJFSchedulingAlgorithm(){
     	preemptive = false;
-    	minHeap = new Heap<Process>(new HeapOrderer<Process>() {
-			public boolean isOrdered(Process expectedBefore, Process expectedAfter) {
-				return expectedBefore.burst <= expectedAfter.burst;
-			}
-    		
+    	minHeap = new PriorityQueue<Process>(10, new Comparator<Process>() {
+    		public int compare(Process p1, Process p2) {
+    			return (int)(p1.getBurstTime() - p2.getBurstTime());
+    		}
     	});
     }
 
@@ -57,15 +56,15 @@ public class SJFSchedulingAlgorithm extends BaseSchedulingAlgorithm implements O
     /** Returns the next process that should be run by the CPU, null if none available.*/
     public Process getNextJob(long currentTime){
     	if(activeJob == null)
-    		activeJob = minHeap.popMax();
+    		activeJob = minHeap.poll();
     	else if(activeJob.isFinished())
-    		activeJob = minHeap.popMax();
+    		activeJob = minHeap.poll();
     	else if(preemptive 
     			&& (minHeap.size() > 0) 
-    			&& (activeJob.burst > minHeap.peekMax().burst))
+    			&& (activeJob.burst > minHeap.element().burst))
     	{
     		minHeap.add(activeJob);
-    		activeJob = minHeap.popMax();
+    		activeJob = minHeap.poll();
     	}
 
     	return activeJob;
