@@ -81,6 +81,13 @@ public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm {
     		activeJob = processes.poll();
     		activeStartTime = currentTime;
     	}
+    	// If the current job is finished, go to the next one
+    	// regardless of its quantum.
+    	else if(activeJob.isFinished())
+    	{
+    		activeJob = processes.poll();
+    		activeStartTime = currentTime;
+    	}
     	// Otherwise, if the active job's quantum is over,
     	// add it back to the end of the queue and take the front.
     	// This works even if the active job is the only one
