@@ -24,7 +24,7 @@ public class CPUScheduler {
 	 * use the articulate constructor to build their own process set of any
 	 * length.
 	 */
-	private static final int DEF_PROC_COUNT = 50;
+	private static final int DEF_PROC_COUNT = 100;
 
 	/** This simulates elapsed time. */
 	private long currentTime = 0;

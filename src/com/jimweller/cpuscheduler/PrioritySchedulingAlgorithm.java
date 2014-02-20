@@ -14,15 +14,25 @@ import java.util.PriorityQueue;
 public class PrioritySchedulingAlgorithm extends BaseSchedulingAlgorithm implements OptionallyPreemptiveSchedulingAlgorithm {
     private boolean preemptive;
     // Processes ordered with highest priority first.
-    private PriorityQueue<Process> maxHeap;
+    private final PriorityQueue<Process> maxHeap;
+    // Problem: Java PriorityQueues take the minimum priority to be the
+    // most important, but we need to keep track of which jobs
+    // have the maximum priority.
+    // Solution: This Comparator will signal that its first argument
+    // is "more important" (has a greater priority) than its second
+    // by subtracting the second's priority from the first's. Thus,
+    // if the first job's priority is greater than the second, the
+    // comparator will return a negative number.
+    private final Comparator<Process> orderer;
 
     PrioritySchedulingAlgorithm(){
     	preemptive = false;
-    	maxHeap = new PriorityQueue<Process>(10, new Comparator<Process>() {
-    		public int compare(Process p1, Process p2) {
-    			return (int)(p2.priority - p1.priority);
-    		}
-    	});
+    	orderer = new Comparator<Process>() {
+			public int compare(Process p1, Process p2) {
+				return (int)(p2.priority - p1.priority);
+			}
+		};
+    	maxHeap = new PriorityQueue<Process>(10, orderer);
     }
 
     /** Add the new job to the correct queue.*/
@@ -54,8 +64,18 @@ public class PrioritySchedulingAlgorithm extends BaseSchedulingAlgorithm impleme
 
     /** Returns the next process that should be run by the CPU, null if none available.*/
     public Process getNextJob(long currentTime){
-    	if(activeJob == null || preemptive || activeJob.isFinished())
+    	if(activeJob == null)
     		activeJob = maxHeap.poll();
+    	else if(activeJob.isFinished())
+    		activeJob = maxHeap.poll();
+    	else if(preemptive
+    			&& maxHeap.size() > 0
+    			&& orderer.compare(maxHeap.element(), activeJob) < 0)
+    	{
+    		maxHeap.add(activeJob);
+    		activeJob = maxHeap.element();
+    	}
+    	
     	return activeJob;
     }
 
