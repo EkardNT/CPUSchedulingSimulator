@@ -11,9 +11,13 @@ package com.jimweller.cpuscheduler;
 import java.util.*;
 
 public abstract class BaseSchedulingAlgorithm implements SchedulingAlgorithm {
+	/** Whether preemption is enabled. */
+	protected boolean preemptive;
+	/** The current quantization period. */
+	protected int quantum;	
     /** The currently running process, null if none. */
     protected Process activeJob;
-
+    
     /** Add the new job to the correct queue.*/
     public abstract void addJob(Process p);
     
@@ -29,6 +33,26 @@ public abstract class BaseSchedulingAlgorithm implements SchedulingAlgorithm {
 
     /** Return a human-readable name for the algorithm. */
     public abstract String getName();
+    
+    public boolean supportsQuantization()
+    {
+    	return false;
+    }
+    
+    public boolean supportsPreemption()
+    {
+    	return false;
+    }
+    
+    public void setQuantum(int quantum)
+    {
+    	this.quantum = quantum;
+    }
+    
+    public void setPreemptive(boolean preemptive)
+    {
+    	this.preemptive = preemptive;
+    }
 
     /** Returns true if the current job is finished or there is no such job. */
     public boolean isJobFinished(){

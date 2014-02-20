@@ -261,11 +261,8 @@ public class CPUSchedulerFrame extends JFrame implements ActionListener {
 	    cpu.getAlgorithm().setPriority(priCB.getState());
 	    }*/
 	else if( e.getSource() == preemptCB){
-	    try {
-		OptionallyPreemptiveSchedulingAlgorithm sjfAlg = (OptionallyPreemptiveSchedulingAlgorithm)cpu.getAlgorithm();
-		sjfAlg.setPreemptive(preemptCB.getState());
-	    }
-	    catch (Exception exc) {}
+		if(cpu.getAlgorithm().supportsPreemption())
+			cpu.getAlgorithm().setPreemptive(preemptCB.getState());
 	}
 	else if( e.getSource() == showHiddenCB){
 	    ProcessPanel.setShowHidden( showHiddenCB.getState() );
@@ -408,21 +405,18 @@ public class CPUSchedulerFrame extends JFrame implements ActionListener {
 		if( e.getSource() == algButtons.get(i)){
 		    SchedulingAlgorithm newAlg = algs.get(i);
 
-		    //set quantum if RR alg
-		    try {
-			RoundRobinSchedulingAlgorithm RR = (RoundRobinSchedulingAlgorithm)newAlg;
-			RR.setQuantum(Integer.parseInt(quantumField.getText()));
+		    try
+		    {
+		    	if(newAlg.supportsQuantization())
+		    		newAlg.setQuantum(Integer.parseInt(quantumField.getText(), 10));
 		    }
-		    catch (Exception exc){}
-
-		    //make preempt button work if SJF alg
-		    try {
-			OptionallyPreemptiveSchedulingAlgorithm sjfAlg = (OptionallyPreemptiveSchedulingAlgorithm)newAlg;
-			preemptCB.setEnabled(true);
+		    catch(NumberFormatException nfe)
+		    {
+		    	// Quantum field is invalid, ignore it.
 		    }
-		    catch (Exception exc) {
-			preemptCB.setEnabled(false);
-		    }
+		    	
+		    // Enable preemption button if the algorithm supports preemption.
+		    preemptCB.setEnabled(newAlg.supportsPreemption());
 
 		    cpu.setAlgorithm(newAlg);
 		    algolLbl.setText(newAlg.getName());

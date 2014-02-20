@@ -10,18 +10,20 @@ package com.jimweller.cpuscheduler;
 
 import java.util.*;
 
-public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm {
-
-    /** the timeslice each process gets */
-    private int quantum;
+public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm 
+{
     // Round robin queue.
     private final Queue<Process> processes;
     // Time at which the active job started its quantum.
     private long activeStartTime;
 
     RoundRobinSchedulingAlgorithm() {
-    	quantum = 10;
     	processes = new LinkedList<Process>();
+    }
+    
+    public boolean supportsQuantization()
+    {
+    	return true;
     }
 
     /** Add the new job to the correct queue. */
@@ -48,25 +50,6 @@ public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm {
     		otherAlg.addJob(p);
     	processes.clear();
     	activeJob = null;
-    }
-
-    /**
-     * Get the value of quantum.
-     * 
-     * @return Value of quantum.
-     */
-    public int getQuantum() {
-	return quantum;
-    }
-
-    /**
-     * Set the value of quantum.
-     * 
-     * @param v
-     *            Value to assign to quantum.
-     */
-    public void setQuantum(int v) {
-	this.quantum = v;
     }
 
     /**

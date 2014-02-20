@@ -1,33 +1,35 @@
 package com.jimweller.cpuscheduler;
 
-public class MultiLevelPriotitySchedulingAlgorithm extends BaseSchedulingAlgorithm implements OptionallyPreemptiveSchedulingAlgorithm 
+public class MultiLevelPriotitySchedulingAlgorithm extends BaseSchedulingAlgorithm 
 {
-	private boolean preemptive;
 	private final RoundRobinSchedulingAlgorithm level1Queue, level2Queue;
 	private final FCFSSchedulingAlgorithm level3Queue;
 	private SchedulingAlgorithm activeJobQueue;
 	
 	public MultiLevelPriotitySchedulingAlgorithm()
 	{
-		preemptive = false;
 		level1Queue = new RoundRobinSchedulingAlgorithm();
 		level1Queue.setQuantum(10);
 		level2Queue = new RoundRobinSchedulingAlgorithm();
-		level2Queue.setQuantum(level1Queue.getQuantum() * 2);
+		level2Queue.setQuantum(2 * level1Queue.quantum);
 		level3Queue = new FCFSSchedulingAlgorithm();
-		activeJobQueue = null;
 	}
-
-	@Override
-	public boolean isPreemptive() 
+	
+	public boolean supportsQuantization()
 	{
-		return preemptive;
+		return true;
 	}
-
-	@Override
-	public void setPreemptive(boolean v) 
+	
+	public boolean supportsPreemption()
 	{
-		preemptive = v;
+		return true;
+	}
+	
+	public void setQuantum(int quantum)
+	{
+		super.setQuantum(quantum);
+		level1Queue.setQuantum(quantum);
+		level2Queue.setQuantum(2 * quantum);
 	}
 
 	public void addJob(Process p)

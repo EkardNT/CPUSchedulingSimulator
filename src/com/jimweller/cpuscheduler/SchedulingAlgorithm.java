@@ -29,4 +29,22 @@ public interface SchedulingAlgorithm {
     /** Transfer all the jobs in the queue of a SchedulingAlgorithm to another, such as
 	when switching to another algorithm in the GUI */
     public void transferJobsTo(SchedulingAlgorithm otherAlg);
+    
+    /** Indicates whether the scheduling algorithm supports quantization.
+     * If this is true then the runtime will configure the algorithm's
+     * quantum setting by calling setQuantum() based on user input, otherwise
+     * setQuantum() will not be called. */
+    public boolean supportsQuantization();
+    
+    /** Configures algorithm quantum setting, if quantization is supported. */
+    public void setQuantum(int quantum);
+    
+    /** Indicates whether the scheduling algorithm supports preemption.
+     * If this is true then the runtime will configure the algorithm's
+     * preemption setting by calling setPreemption() based on user input,
+     * otherwise setPreemption() will not be called. */
+    public boolean supportsPreemption();
+    
+    /** Configures algorithm preemption setting, if preemption is supported. */
+    public void setPreemptive(boolean preemptive);
 }

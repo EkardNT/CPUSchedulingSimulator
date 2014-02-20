@@ -3,15 +3,19 @@ package com.jimweller.cpuscheduler;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
-public abstract class BasePrioritizedSchedulingAlgorithm extends BaseSchedulingAlgorithm implements OptionallyPreemptiveSchedulingAlgorithm { 
-	private boolean preemptive;
-    private final PriorityQueue<Process> jobQueue;
+public abstract class BasePrioritizedSchedulingAlgorithm extends BaseSchedulingAlgorithm
+{
+	final PriorityQueue<Process> jobQueue;
     private final Comparator<Process> orderer;
 
     BasePrioritizedSchedulingAlgorithm(Comparator<Process> orderer){
-    	preemptive = false;
     	this.orderer = orderer;
     	jobQueue = new PriorityQueue<Process>(10, orderer);
+    }
+    
+    public boolean supportsPreemption() 
+    {
+    	return true;
     }
 
     /** Add the new job to the correct queue.*/
@@ -56,19 +60,5 @@ public abstract class BasePrioritizedSchedulingAlgorithm extends BaseSchedulingA
     	}
     	
     	return activeJob;
-    }
-
-    /**
-     * @return Value of preemptive.
-     */
-    public boolean isPreemptive(){
-    	return preemptive;
-    }
-    
-    /**
-     * @param v  Value to assign to preemptive.
-     */
-    public void setPreemptive(boolean  v){
-    	preemptive = v;
     }
 }
