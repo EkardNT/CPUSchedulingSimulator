@@ -29,7 +29,7 @@ public abstract class BaseSchedulingAlgorithm implements SchedulingAlgorithm {
     public abstract void transferJobsTo(SchedulingAlgorithm otherAlg);
 
     /** Returns the next process that should be run by the CPU, null if none available.*/
-    public abstract Process getNextJob(long currentTime);
+    public abstract Process getNextJob(long currentTime, long availableMemory);
 
     /** Return a human-readable name for the algorithm. */
     public abstract String getName();

@@ -17,8 +17,8 @@ public interface SchedulingAlgorithm {
     /** Returns true if the job was present and was removed. */
     public boolean removeJob(Process p);
 
-    /** Returns the next process that should be run by the CPU, null if none available.*/
-    public Process getNextJob(long currentTime);
+    /** Returns the next process that should be run by the CPU, null if none available. */
+    public Process getNextJob(long currentTime, long availableMemory);
 
     /** Returns true if the current job is finished or there is no such job. */
     public boolean isJobFinished();

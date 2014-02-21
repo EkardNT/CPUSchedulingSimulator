@@ -28,6 +28,9 @@ public class CPUScheduler {
 
 	/** This simulates elapsed time. */
 	private long currentTime = 0;
+	
+	/** This simulates memory constraints */
+	private long availableMemory = 0;
 
 	/** The amount of elapsed idle time. */
 	private long idle = 0;
@@ -172,7 +175,7 @@ public class CPUScheduler {
 	 */
 	void Schedule() {
 		Process p = null;
-		activeJob = schedulingAlgorithm.getNextJob(currentTime);
+		activeJob = schedulingAlgorithm.getNextJob(currentTime, availableMemory);
 		Dispatch();
 	}
 

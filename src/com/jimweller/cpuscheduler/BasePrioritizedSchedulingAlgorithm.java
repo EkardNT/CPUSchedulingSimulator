@@ -46,7 +46,7 @@ public abstract class BasePrioritizedSchedulingAlgorithm extends BaseSchedulingA
 
 
     /** Returns the next process that should be run by the CPU, null if none available.*/
-    public Process getNextJob(long currentTime){
+    public Process getNextJob(long currentTime, long availableMemory){
     	if(activeJob == null)
     		activeJob = jobQueue.poll();
     	else if(activeJob.isFinished())

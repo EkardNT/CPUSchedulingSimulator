@@ -60,9 +60,9 @@ public class MultiLevelPriotitySchedulingAlgorithm extends BaseSchedulingAlgorit
 		switchActiveJob(null);
 	}
 
-	public Process getNextJob(long currentTime)
+	public Process getNextJob(long currentTime, long availableMemory)
 	{
-		Process potential = getJobFromLowestQueue(currentTime);
+		Process potential = getJobFromLowestQueue(currentTime, availableMemory);
 		
 		if(activeJob == null)
 			switchActiveJob(potential);
@@ -99,15 +99,15 @@ public class MultiLevelPriotitySchedulingAlgorithm extends BaseSchedulingAlgorit
 		return level3Queue;
 	}
 	
-	private Process getJobFromLowestQueue(long currentTime)
+	private Process getJobFromLowestQueue(long currentTime, long availableMemory)
 	{
-		Process job = level1Queue.getNextJob(currentTime);
+		Process job = level1Queue.getNextJob(currentTime, availableMemory);
 		if(job != null)
 			return job;
-		job = level2Queue.getNextJob(currentTime);
+		job = level2Queue.getNextJob(currentTime, availableMemory);
 		if(job != null)
 			return job;
-		return level3Queue.getNextJob(currentTime);
+		return level3Queue.getNextJob(currentTime, availableMemory);
 	}
 	
 	private void switchActiveJob(Process nextActiveJob)

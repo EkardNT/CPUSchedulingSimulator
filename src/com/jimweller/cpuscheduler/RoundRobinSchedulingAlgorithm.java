@@ -56,7 +56,7 @@ public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm
      * Returns the next process that should be run by the CPU, null if none
      * available.
      */
-    public Process getNextJob(long currentTime) {
+    public Process getNextJob(long currentTime, long availableMemory) {
     	// If there's no currently active job, don't worry about
     	// timing, just get the next available job if any.
     	if(activeJob == null)
