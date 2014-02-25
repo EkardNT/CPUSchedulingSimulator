@@ -17,7 +17,7 @@ public class PrioritySchedulingAlgorithm extends BasePrioritizedSchedulingAlgori
     {
     	super(new Comparator<Process>() {
 			public int compare(Process p1, Process p2) {
-				return (int)(p2.priority - p1.priority);
+				return (int)(p2.getPriorityWeight() - p1.getPriorityWeight());
 			}
 		});
     }

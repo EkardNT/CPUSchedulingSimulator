@@ -1,6 +1,7 @@
 package com.jimweller.cpuscheduler;
 
 import java.io.*;
+import java.util.Random;
 
 /** 
  *   An aggregate data type to represent a process to schedule. It will
@@ -9,82 +10,91 @@ import java.io.*;
  */
 public class Process{
     
+	public static final long 
+		MAX_BURST_TIME = 100,
+		MAX_DELAY_TIME = 70,
+		MAX_PRIORITY = 9;
+	
     /** The process' identification number. It must be unique. */
-    long PID=0;      // [ 0 - sizeof(long) ]
+    private long PID=0;      // [ 0 - sizeof(long) ]
 
     /** Store the value of the next pid to use. There is no garbage
 	collection. I just take the next available number. It is the same
 	variable in *all* instances of a process.
     */
-    static long nextPID = 0; // [ 0 - sizeof(long) ]
+    private static long nextPID = 0; // [ 0 - sizeof(long) ]
 
 
     /** Process' CPU burst time. The total amount of CPU time that a process
 	needs in seconds. [0 - 100]. */
-    long burst=0;    // [0 - 100]
+    private long burst=0;    // [0 - 100]
 
     /** Store original burst state. To show total an remaining I want to   
 	know what the original CPU burst of a process was. The variable
 	'burst' will store the "active" state 
     */
-    long initBurst=0;
+    private long initBurst=0;
 
-    /** Delay of arrival. How long after the previous process arrival
+    /** Delay of arrival. How private long after the previous process arrival
 	does this process arrive? It is a time offset in seconds. 
 	[0 - 95]*/
-    long delay=0;    // [0 - 95]
+    private long delay=0;    // [0 - 95]
 
     /** Execution priority. The weight that this process has. It aids
 	the scheduler in some premptive algorithms. [0(low) - 9 (high)] */
-    long priority=0; // [0(low) - 9 (high)]
+    private long priority=0; // [0(low) - 9 (high)]
 
-
+    /** How much memory this process requires in order to run. */
+    private long memory = 0; // Randomly generated in [0, 50].
+    
     /** The actual time the process arrived. This will be set by the 
 	scheduler. */
-    long arrival=0;  // set by scheduler
+    private long arrival=0;  // set by scheduler
 
     /** The time that the process firsts begins execution. This will be
 	set by the scheduler. */
-    long start=0;   
+    private long start=0;   
 
     /** The time that the process ends execution. This will be
 	set by the scheduler. */
-    long finish=0;  
+    private long finish=0;  
 
     /** The total amount of time the process spent waiting. Measured
 	from the time it arrives to the time it finishes */
-    long wait=0;   
+    private long wait=0;   
     
     /** The measure of time after arrival that it took to begin execution */
-    long response=0; 
+    private long response=0; 
 
     /** Measure of the total time a process was in the clutches of the
 	scheduler. Whether ready or waiting or running the full lifecycle
 	of this process */
-    long lifetime = 0;
+    private long lifetime = 0;
     
     /** a way to check if a process has occured yet */
-    boolean arrived = false;
+    private boolean arrived = false;
 
     /** A way to check if a process has started running yet. */
-    boolean started=false;
+    private boolean started=false;
 
     /** A way to see if a process is complete */
-    boolean finished=false;
+    private boolean finished=false;
 
     /** A way to see if a process is scheduled to run this cycle */
-    boolean active = false;
-    
+    private boolean active = false;    
   
     /** Default constructor. Randomly generate a process and fills in fields
 	using the bounds specified above. */
-    Process(){
-	nextPID++;
-	PID = nextPID;
-	burst = (long) (Math.random() * 99 + 1 );
-	initBurst = burst;
-	delay = (long) (Math.random() * 70 );
-	priority = (long) Math.round((Math.random() * 9));
+    public Process(long seed)
+    {
+    	Random rand = new Random(seed);
+		nextPID++;
+		PID = nextPID;
+		burst = rand.nextInt((int)MAX_BURST_TIME + 1);
+		initBurst = burst;
+		delay = rand.nextInt((int)MAX_DELAY_TIME + 1);
+		priority = rand.nextInt((int)MAX_PRIORITY + 1);
+		memory = rand.nextInt((int)9 + 1);
     }
 
 
@@ -97,14 +107,16 @@ public class Process{
 	@param d The delay in process arrival mesured from the 
 	         arrival of the previous process.
 	@param p The priority weight of the process.
+	@param memory The memory consumption of the process.
     */
-    Process(long b, long d, long p){
-	nextPID++;
-	PID = nextPID;
-	burst = b;
-	initBurst = burst;
-	delay = d;
-	priority = p;
+    Process(long b, long d, long p, long memory){
+		nextPID++;
+		PID = nextPID;
+		burst = b;
+		initBurst = burst;
+		delay = d;
+		priority = p;
+		this.memory = memory;
     }
 
     public boolean equals(Object object)
@@ -118,27 +130,25 @@ public class Process{
      * (e.g. arrival, start, finish) and then sets the state of those
      * events booleans.
      */
-    public  synchronized void executing(long timeNow){
+    public  synchronized void executing(long timeNow)
+    {	
+    	active=true;
 	
-	active=true;
-
-	if( timeNow == arrival ){
-	    arrived = true;
-	}
+		arrived = timeNow >= arrival;
 	    
-	if( burst == initBurst){
-	    started  = true;
-	    start    = timeNow;
-	    response = start - arrival;
-	}
-	    
-	burst--;
-	lifetime++;
-	    
-	if( burst == 0){
-	    finished = true;
-	    finish = timeNow;
-	}
+		if( burst == initBurst){
+		    started  = true;
+		    start    = timeNow;
+		    response = start - arrival;
+		}
+		    
+		burst--;
+		lifetime++;
+		    
+		if( burst <= 0){
+		    finished = true;
+		    finish = timeNow;
+		}
     }
 
 
@@ -147,21 +157,20 @@ public class Process{
      * for cpu time. Use current time to check if this was our arrival time.
      */
     public synchronized void waiting(long timeNow){
- 	active=false;
-	lifetime++;
-	wait++;
-	if( timeNow == arrival ){
-	    arrived = true;
-	}
+	 	active=false;
+		lifetime++;
+		wait++;
+		arrived = timeNow >= arrival;
     }
 
     
     /** Show state of process on the terminal
      */
     public void print(){
-	System.out.println("PID     : " + PID + "\n" +
+    	System.out.println("PID     : " + PID + "\n" +
 			   "Burst   : " + burst + "\n" +
 			   "IBurst  : " + initBurst + "\n" +
+			   "Memory  : " + memory + "\n" +
 			   "Delay   : " + delay + "\n" +
 			   "Priority: " + priority + "\n" +
 			   "Arrival : " + arrival + "\n" +
@@ -176,7 +185,7 @@ public class Process{
      *  formatting. Oh, to say %8ld in java.
      */
     public void println(){
-	System.out.println("PID " + PID + " b" + burst + " p" +
+	System.out.println("PID " + PID + " b" + burst + "mem " + memory + " p" +
 			   priority +  " a" +
 			   arrival + " s" + start +  " f" +
 			   finish + " w" + wait +  " r" +
@@ -188,7 +197,7 @@ public class Process{
     /** Print comma seperated values to the terminal
      */
     public void printCSV(){
-	System.out.println(PID + "," + initBurst + "," +
+	System.out.println(PID + "," + initBurst + "," + memory + "," +
 			   priority +  "," + arrival + "," + 
 			   start +  "," + finish + ","  +
 			    wait +  "," + response + "," + lifetime);
@@ -199,7 +208,7 @@ public class Process{
      * Print comma seperated values list to a PrintWriter object.
      */
     public void printCSV(PrintWriter pw){
-	pw.println(PID + "," + initBurst + "," +
+	pw.println(PID + "," + initBurst + "," + memory + "," +
 			   priority +  "," + arrival + "," + 
 			   start +  "," + finish + ","  +
 			    wait +  "," + response + "," + lifetime);
@@ -291,21 +300,26 @@ public class Process{
     public long getLifetime(){ return lifetime; };
 
 
+    /**
+     * Gets the memory required for the process to execute.
+     * @return The required amount of memory.
+     */
+    public long getMemory() { return memory; };
+    
     /** Restores the process to it's original state. For rerunning
 	a data set maybe under different circumstances*/
     public void restore(){
-	burst = initBurst;
-	lifetime = 0;
-	response = 0;
-	start    = 0;
-	wait     = 0;
-	active   = false;
-	started  = false;
-	finished = false;
-	arrived  = false;
+		burst = initBurst;
+		lifetime = 0;
+		response = 0;
+		start    = 0;
+		wait     = 0;
+		active   = false;
+		started  = false;
+		finished = false;
+		arrived  = false;
+		memory = 0;
     }
-
-
 
     /**
      * Get the value of active.
@@ -335,5 +349,3 @@ public class Process{
     public boolean isArrived() { return arrived; }
 
 } // ENDS class Process
-
- 

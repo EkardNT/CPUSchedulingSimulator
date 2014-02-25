@@ -2,8 +2,10 @@ package com.jimweller.cpuscheduler;
 
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 import javax.swing.border.*;
+
 //import Process;
 import java.awt.geom.*;
 
@@ -16,124 +18,113 @@ import java.awt.geom.*;
  */
 class ProcessPanel extends JPanel{
 
-    /** The process this panel sharkfishes from */
+    /** The process this panel sharkfishes from */ // Sharkfishes ??!?!
     Process proc;
 
     /** The width of the process panel */
     static final int PPWIDTH  = 10;
 
     /** The height of the process panel */
-    static final int PPHEIGHT = 115;
-
-    /** The height you want the meters drawn. I do a 1:1 ratio with my maximum burst. */
-    static final int BARHEIGHT = 100;
-
-    /** Some pretty colors to draw with. */
-    Color burstColor,
-	initBurstColor=Color.darkGray,
-	unarrivedColor,
-	lblColor;
-    
+    static final int PPHEIGHT = 200;
+        
     /** The label to show the priority. */
-    JLabel priLbl;
+    private final JLabel priLbl;
+    private final JPanel burstBarSpacer, memoryBarSpacer;
 
+    private long totalMemory, availableMemory;
+    
     /** Do you want to see unarrived processes? Look into the future.  */
     static boolean showHidden=false;
-        
-   
-    /** Default constructor. Generates its own process. */
-    ProcessPanel(){
-	proc = new Process();
-	initPanel();
-    }
-
+    
     /**
      * Articulate constructor.
      * param p the process to base this panel on. 
      */
-    ProcessPanel( Process p){
-	proc = p;
-	initPanel();
-    }
+    ProcessPanel(Process p, long totalMemory, long availableMemory){
+		this.proc = p;
+		this.totalMemory = Math.max(1, totalMemory);
+		this.availableMemory = Math.max(1, availableMemory);
 
-    /**
-     * Build the panel
-     */
-    void initPanel(){
-	setAlignmentX(Component.LEFT_ALIGNMENT);
-	setLayout(new BorderLayout());
-	
-	priLbl = new JLabel(""+ (int)proc.getPriorityWeight());
-	priLbl.setToolTipText("Once a process has arrived this shows its"+
-			      " priority. (0 High and 9 Low)");
-	priLbl.setHorizontalAlignment(SwingConstants.CENTER);
-
-
-	//Font jf =  new Font("Dialog",Font.PLAIN,10);
-	//priLbl.setFont( jf );
-	//priLbl.setOpaque(true);
-
-	setSize(PPWIDTH,PPHEIGHT);
-	setBackground(Color.white);
-	setOpaque(true);
-	add(priLbl,"South");
+		setBackground(Color.WHITE);
+		setSize(PPWIDTH, PPHEIGHT);
+		setLayout(new GridBagLayout());
+		GridBagConstraints c;
+		
+		priLbl = new JLabel(Long.toString(proc.getPriorityWeight()));
+		priLbl.setBackground(Color.WHITE);
+		priLbl.setToolTipText("Once a process has arrived this shows its priority. (0 High and 9 Low)");
+		priLbl.setSize(PPWIDTH, (int)(0.20 * PPHEIGHT));
+		c = new GridBagConstraints();
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.weighty = 0;
+		add(priLbl, c);
+		
+		burstBarSpacer = new JPanel();
+		burstBarSpacer.setToolTipText("Displays the process' burst status.");
+		burstBarSpacer.setSize(PPWIDTH, (int)(0.40 * PPHEIGHT));
+		burstBarSpacer.setOpaque(false);
+		c = new GridBagConstraints();
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.weighty = 1;
+		c.fill = GridBagConstraints.VERTICAL;
+		add(burstBarSpacer, c);
+		
+		memoryBarSpacer = new JPanel();
+		memoryBarSpacer.setToolTipText("Displays the process' memory requirements.");
+		memoryBarSpacer.setSize(PPWIDTH, (int)(0.40 * PPHEIGHT));
+		memoryBarSpacer.setOpaque(false);
+		c = new GridBagConstraints();
+		c.gridx = 0;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.weighty = 1;
+		c.fill = GridBagConstraints.VERTICAL;
+		add(memoryBarSpacer, c);
     }
 
     /**
      * If the process is done remove it. Otherwise update the burst meter.
      */
     public void paintComponent(Graphics g){
-	super.paintComponent(g);
-	if ( proc.isFinished() == true){
-	    setVisible(false);
-	}
-	else {
-	    DrawBursts(g);
-	    //	    setVisible(true);
-	}
+		super.paintComponent(g);
+		Graphics2D g2 = (Graphics2D)g;
+		paintBurstBar(burstBarSpacer.getBounds(), g2);
+		paintMemoryBar(memoryBarSpacer.getBounds(), g2);
     }
-
     
-    /**
-     * Draw the burst panel. Draw remaining burst over finished burst.
-     * Draw the active process in bright color.
-     */
-    void DrawBursts(Graphics g){
-	int initBurstHeight=0,burstHeight=0;
-	int width=0;
-
-	initBurstHeight = (int) proc.getInitBurstTime();
-	burstHeight = (int) proc.getBurstTime();
-	width  = (int) PPWIDTH-2; // off by one error in swing?
-    	
-
-
-	lblColor = ( proc.isArrived()  ? Color.black :
-		     (showHidden ? Color.darkGray : Color.white) );
-
-	initBurstColor = ( proc.isArrived() ? Color.black : Color.darkGray );
-
-	burstColor  = (proc.isArrived() ) ? 
-	    (proc.isActive() == true ? Color.red : new Color(0,0,173) ):
-	    (showHidden ? Color.darkGray : Color.white) ;
-
-
-	priLbl.setForeground( lblColor );
-	//priLbl.setBackground( proc.isActive() ? Color.red : Color.white );
-
-
-	if( proc.isArrived() ){
-	    g.setColor(initBurstColor);
-	    g.drawRect(0,BARHEIGHT-initBurstHeight,width,initBurstHeight);
-	    g.setColor(burstColor);
-	    g.fillRect(1,BARHEIGHT-burstHeight+1,width-1,burstHeight-1);
-	}
-	else if( showHidden ){
-	    g.setColor(initBurstColor);
-	    g.drawRect(0,BARHEIGHT-initBurstHeight,width,initBurstHeight);
-	}
-	
-   }
+    private void paintBurstBar(Rectangle bounds, Graphics2D g)
+    {
+    	g.setColor(Color.BLACK);
+    	g.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
+    	double fillFactor = proc.getBurstTime() / (double)Process.MAX_BURST_TIME;
+    	g.setColor(Color.RED);
+    	g.fillRect(bounds.x + 1, bounds.height - (int)(fillFactor * bounds.height) - 1, bounds.width - 2, (int)(fillFactor * bounds.height));
+    }
+    
+    private void paintMemoryBar(Rectangle bounds, Graphics2D g)
+    {
+    	if(proc.isStarted() || proc.getMemory() <= availableMemory)
+    		g.setColor(Color.GREEN);
+    	else
+    		g.setColor(Color.RED);
+    	g.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
+    	double fillFactor = proc.getMemory() / (double)totalMemory;
+    	if(fillFactor > 1)
+    	{
+    		fillFactor = 1;
+    		g.setColor(Color.ORANGE);
+    	}
+    	else
+    		g.setColor(Color.YELLOW);
+    	g.fillRect(bounds.x + 1, bounds.y + 1, bounds.width - 2, (int)(fillFactor * (bounds.height - 2)));
+    }
 
 
     /**
@@ -151,9 +142,14 @@ class ProcessPanel extends JPanel{
     
 	
     public Dimension getPreferredSize(){
-	return ( new Dimension(PPWIDTH,PPHEIGHT));
+    	return ( new Dimension(PPWIDTH,PPHEIGHT));
     }
    
+    public void setMemoryCapacity(long totalMemory, long availableMemory)
+    {
+    	this.totalMemory = Math.max(1, totalMemory);
+    	this.availableMemory = availableMemory;
+    }
     
     /**
        * Get the value of showHidden.

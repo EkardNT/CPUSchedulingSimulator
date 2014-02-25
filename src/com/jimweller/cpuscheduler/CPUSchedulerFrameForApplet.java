@@ -1,16 +1,23 @@
 package com.jimweller.cpuscheduler;
 
 import java.util.Vector;
+
 import javax.swing.*;
 import javax.swing.border.*;
+
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.filechooser.*;
+
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Enumeration;
+
 import javax.swing.*;
 import javax.swing.filechooser.*;
+
 import java.net.*;
 
 /** 
@@ -149,7 +156,7 @@ public class CPUSchedulerFrameForApplet extends JFrame implements ActionListener
      * Display the jobs from the CPUScheduler on a blank jobQueue
      */
     public void fillQueuePanel(){
-	Vector v = cpu.getJobs();
+	ArrayList<Process> v = cpu.getJobs();
  	queuePanel.setBackground(Color.white);
  	queuePanel.setOpaque(true);
 	queuePanel.setSize(140,340);
@@ -159,7 +166,7 @@ public class CPUSchedulerFrameForApplet extends JFrame implements ActionListener
 	queuePanel.setLayout(flay);
 	//queuePanel.setMaximumSize(new Dimension(640,130));
 	for( int i = 0; i < v.size() ; i++){
-	    ProcessPanel p = new ProcessPanel( (Process) v.get(i) );
+	    ProcessPanel p = new ProcessPanel( (Process) v.get(i), cpu.getTotalMemory(), cpu.getAvailableMemory());
 	    queuePanel.add(p,"Left");
 	}
 	queuePanel.revalidate();

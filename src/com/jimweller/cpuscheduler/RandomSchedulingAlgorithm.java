@@ -32,9 +32,9 @@ public class RandomSchedulingAlgorithm extends BaseSchedulingAlgorithm {
     }
 
     /** Returns the next process that should be run by the CPU, null if none available.*/
-    public Process getNextJob(long currentTime){
-	activeJob = jobs.get(rand.nextInt(jobs.size()));
-	return activeJob;
+    public Process getNextJob(long currentTime)
+    {
+		return activeJob = jobs.size() == 0 ? null : jobs.get(rand.nextInt(jobs.size()));
     }
 
     /** Transfer all the jobs in the queue of a SchedulingAlgorithm to another, such as

@@ -16,8 +16,7 @@ import java.text.*;
  */
 
 public class CPUScheduler {
-	/** Which scheduling algorithm is in use currently */
-	private SchedulingAlgorithm schedulingAlgorithm;
+	private SchedulingAlgorithm executingScheduler, arrivedScheduler;
 
 	/**
 	 * The default number of processes to randomly generate. The programmer can
@@ -43,19 +42,29 @@ public class CPUScheduler {
 
 	/** Whether to use priority weights for the round robin algorithm. */
 	private boolean priority = false;
+	
+	/** The total amount of memory available to the system. */
+	private long totalMemory = 0;
+	
+	/** The amount of memory that is currently in use by processes
+	 * which have started but not ended. */
+	private long usedMemory = 0;
 
 	/**
 	 * The collection of all processes involved in this simulation. Extraneous
 	 * now but handy for debugging.
 	 */
-	private Vector<Process> allProcs = new Vector<Process>(DEF_PROC_COUNT);
+	private ArrayList<Process> allProcs = new ArrayList<Process>(DEF_PROC_COUNT);
 
 	/** The collection of all jobs that will be used */
-	private Vector<Process> jobQueue = new Vector<Process>(DEF_PROC_COUNT);
+	private ArrayList<Process> jobQueue = new ArrayList<Process>(DEF_PROC_COUNT);
 
 	/** The collection of all jobs that have arrived and require CPU time. */
-	private Vector<Process> readyQueue = new Vector<Process>(DEF_PROC_COUNT);
+	private ArrayList<Process> readyQueue = new ArrayList<Process>(DEF_PROC_COUNT);
 
+	private final ArrayList<Process> newlyArrivedJobs = new ArrayList<Process>();
+	private final ArrayList<Process> newlyFinishedJobs = new ArrayList<Process>();
+	
 	/**
 	 * A reference to the currently active job. The cpu changes this reference
 	 * to different jobs in the ready queue using the respective algorithm's
@@ -82,10 +91,9 @@ public class CPUScheduler {
 	 */
 	CPUScheduler() {
 		buildRandomQueue();
-		schedulingAlgorithm = new RandomSchedulingAlgorithm();
-	}
-	
-	
+		executingScheduler = new RandomSchedulingAlgorithm();
+		arrivedScheduler = new RandomSchedulingAlgorithm();
+	}	
 
 	/** Empty and populate a CPUScheduler */
 	void buildRandomQueue() {
@@ -93,8 +101,9 @@ public class CPUScheduler {
 		jobQueue.clear();
 		allProcs.clear();
 		Process p;
+		Random r = new Random();
 		for (int i = 0; i < DEF_PROC_COUNT; i++) {
-			p = new Process();
+			p = new Process(r.nextLong());
 			allProcs.add(p);
 		}
 		LoadJobQueue(allProcs);
@@ -104,7 +113,7 @@ public class CPUScheduler {
 	 * Articulate constructor that allows the programmer to design his/her own
 	 * Vector of processes and use them in the scheduler
 	 */
-	CPUScheduler(Vector<Process> ap) {
+	CPUScheduler(ArrayList<Process> ap) {
 		activeJob = null;
 		allProcs = ap;
 		LoadJobQueue(ap);
@@ -120,7 +129,7 @@ public class CPUScheduler {
 		activeJob = null;
 		Process proc = null;
 		String s = null;
-		long b = 0, d = 0, p = 0;
+		long b = 0, d = 0, p = 0, memory = 0;
 		try {
 			BufferedReader input = new BufferedReader(new FileReader(filename));
 			while ((s = input.readLine()) != null) {
@@ -128,7 +137,8 @@ public class CPUScheduler {
 				b = Long.parseLong(st.nextToken());
 				d = Long.parseLong(st.nextToken());
 				p = Long.parseLong(st.nextToken());
-				proc = new Process(b, d, p);
+				memory = Long.parseLong(st.nextToken());
+				proc = new Process(b, d, p, memory);
 				allProcs.add(proc);
 			}
 
@@ -148,7 +158,7 @@ public class CPUScheduler {
 		activeJob = null;
 		Process proc = null;
 		String s = null;
-		long b = 0, d = 0, p = 0;
+		long b = 0, d = 0, p = 0, memory = 0;
 		try {
 			BufferedReader input = new BufferedReader(new FileReader(filename));
 			while ((s = input.readLine()) != null) {
@@ -156,7 +166,8 @@ public class CPUScheduler {
 				b = Long.parseLong(st.nextToken());
 				d = Long.parseLong(st.nextToken());
 				p = Long.parseLong(st.nextToken());
-				proc = new Process(b, d, p);
+				memory = Long.parseLong(st.nextToken());
+				proc = new Process(b, d, p, memory);
 				allProcs.add(proc);
 			}
 
@@ -171,21 +182,49 @@ public class CPUScheduler {
 	 * the process.
 	 */
 	void Schedule() {
-		Process p = null;
-		activeJob = schedulingAlgorithm.getNextJob(currentTime);
+		Process potential = arrivedScheduler.getNextJob(currentTime);
+		// If its already started, then we know it has already reserved its
+		// memory.
+		if(potential == null || potential.isStarted())
+			activeJob = potential;
+		// Otherwise, if it needs to reserve memory...
+		else
+		{
+			// ... but there isn't enough memory available,
+			// then we have to pick from the set of jobs that
+			// have already reserved their memory.
+			if(potential.getMemory() > getAvailableMemory())
+			{
+				activeJob = executingScheduler.getNextJob(currentTime);
+			}
+			// ... and there is enough memory available, reserve that
+			// memory, add the potential job to the scheduler for executing
+			// jobs, and switch to the new job.
+			else
+			{
+				usedMemory += potential.getMemory();
+				executingScheduler.addJob(potential);
+				activeJob = potential;
+			}
+		}
 		Dispatch();
 	}
 
 	/** Actually run the active job and wait the rest of them */
 	void Dispatch() {
-		Process p = null;
-
-		if (activeJob != null)
-			activeJob.executing(currentTime);
-		for (int i = 0; i < readyQueue.size(); ++i) {
-			p = (Process) readyQueue.get(i);
-			if (!p.equals(activeJob)) {
+		for(Process p : readyQueue)
+		{			
+			if(p.equals(activeJob))
+				p.executing(currentTime);
+			else
 				p.waiting(currentTime);
+			
+			if(p.getArrivalTime() == currentTime)
+				newlyArrivedJobs.add(p);
+			if(p.getFinishTime() == currentTime)
+			{
+				newlyFinishedJobs.add(p);
+				usedMemory -= p.getMemory();
 			}
 		}
 	}
@@ -298,7 +337,7 @@ public class CPUScheduler {
 			p = (Process) jobQueue.get(i);
 			if (p.getArrivalTime() == currentTime) {
 				readyQueue.add(p);
-				schedulingAlgorithm.addJob(p);
+				arrivedScheduler.addJob(p);
 				procsIn++;
 			}
 		}
@@ -312,7 +351,8 @@ public class CPUScheduler {
 			p = (Process) readyQueue.get(i);
 			if (p.isFinished() == true) {
 				readyQueue.remove(i);
-				schedulingAlgorithm.removeJob(p);
+				arrivedScheduler.removeJob(p);
+				executingScheduler.removeJob(p);
 				procsOut++;
 			}
 		}
@@ -325,18 +365,20 @@ public class CPUScheduler {
 			p = (Process) jobQueue.get(i);
 			if (p.isFinished() == true) {
 				jobQueue.remove(i);
-				schedulingAlgorithm.removeJob(p);
+				arrivedScheduler.removeJob(p);
+				executingScheduler.removeJob(p);
 			}
 		}
 	}
 
 	/** Load all the jobs into the job queue and setup their arrival times */
-	public void LoadJobQueue(Vector jobs) {
-	        schedulingAlgorithm = new RandomSchedulingAlgorithm();
+	public void LoadJobQueue(ArrayList<Process> jobs) {
+	        arrivedScheduler = new RandomSchedulingAlgorithm();
+	        executingScheduler = new RandomSchedulingAlgorithm();
 	        Process p;
 		long arTime = 0;
 		for (int i = 0; i < jobs.size(); i++) {
-			p = (Process) jobs.get(i);
+			p = jobs.get(i);
 			arTime += p.getDelayTime();
 			p.setArrivalTime(arTime);
 			jobQueue.add(p);
@@ -347,7 +389,7 @@ public class CPUScheduler {
 	public void print() {
 		Process p;
 		for (int i = 0; i < allProcs.size(); i++) {
-			p = (Process) allProcs.get(i);
+			p = allProcs.get(i);
 			p.print();
 			System.out.println("---------------");
 		}
@@ -436,11 +478,21 @@ public class CPUScheduler {
 	 * Set the value of algorithm.
 	 * 
 	 * @param algo
-	 *            The algorithm to use for this simualtion.
+	 *            The algorithm to use for this simulation.
 	 */
 	public void setAlgorithm(SchedulingAlgorithm algo) {
-	    schedulingAlgorithm.transferJobsTo(algo);
-	    schedulingAlgorithm = algo;
+		Class<? extends SchedulingAlgorithm> newAlgoClass = algo.getClass();
+		SchedulingAlgorithm oldAlg = arrivedScheduler;
+		try
+		{
+			arrivedScheduler = (SchedulingAlgorithm)newAlgoClass.newInstance();
+			executingScheduler = (SchedulingAlgorithm)newAlgoClass.newInstance();
+		}
+		catch(Exception e) // Ugh
+		{
+			throw new RuntimeException(e);
+		}		
+		oldAlg.transferJobsTo(arrivedScheduler);
 	}
 
 	/**
@@ -449,7 +501,7 @@ public class CPUScheduler {
 	 * @return The algorithm.
 	 */
 	public SchedulingAlgorithm getAlgorithm() {
-		return schedulingAlgorithm;
+		return arrivedScheduler;
 	}
 
 	/**
@@ -543,6 +595,8 @@ public class CPUScheduler {
 	 * @return a boolean that is true if more cycles remain to be run.
 	 */
 	public boolean nextCycle() {
+		newlyArrivedJobs.clear();
+		newlyFinishedJobs.clear();
 		boolean moreCycles = false;
 		if (jobQueue.isEmpty()) {
 			moreCycles = false;
@@ -574,7 +628,7 @@ public class CPUScheduler {
 	 * Creates a new algorithm of the current type to reset it.
 	 */
 	public void resetAlgorithm() {
-		Class<? extends SchedulingAlgorithm> theAlg = schedulingAlgorithm.getClass();
+		Class<? extends SchedulingAlgorithm> theAlg = arrivedScheduler.getClass();
 		try {
 			setAlgorithm(theAlg.newInstance());
 		} catch (Exception e) {
@@ -629,7 +683,7 @@ public class CPUScheduler {
 	 * 
 	 * @return Vector of all Processes
 	 */
-	public Vector getJobs() {
+	public ArrayList<Process> getJobs() {
 		return allProcs;
 	}
 
@@ -735,7 +789,7 @@ public class CPUScheduler {
 	/**
 	 * Get the standard deviation in process turn around time
 	 * 
-	 * @return an int containting the standard deviation for turn around
+	 * @return an int containing the standard deviation for turn around
 	 */
 	public double getStdDevTurn() {
 		return sDevTurn;
@@ -747,7 +801,29 @@ public class CPUScheduler {
 	 * @return String containing the currently running algorithm's name
 	 */
 	public String getAlgorithmName() {
-		return schedulingAlgorithm.getName();
+		return arrivedScheduler.getName();
+	}
+	
+	/** Gets the total amount of memory in the system. */
+	public long getTotalMemory() { return totalMemory; }
+	
+	/** Sets the total amount of memory in the system. */
+	public void setTotalMemory(long totalMemory) { this.totalMemory = totalMemory; }
+	
+	/** Gets the amount of memory currently in use by started but not ended processes. */
+	public long getUsedMemory() { return usedMemory; }
+	
+	/** Gets the amount of memory currently available for use by nonstarted processes. */
+	public long getAvailableMemory() { return totalMemory - usedMemory; }
+	
+	public Iterable<Process> getNewlyArrivedProcesses()
+	{
+		return newlyArrivedJobs;
+	}
+	
+	public Iterable<Process> getNewlyFinishedProcesses()
+	{
+		return newlyFinishedJobs;
 	}
 
 }// ENDS class CPUScheduler
