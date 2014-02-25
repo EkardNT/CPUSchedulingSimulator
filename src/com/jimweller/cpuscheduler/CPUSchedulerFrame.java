@@ -59,6 +59,7 @@ public class CPUSchedulerFrame extends JFrame implements ActionListener {
 	JLabel statusBar, algolLbl;
 	StatsPanel waitSP, turnSP, responseSP;
 	ClockPanel cpuTimePanel;
+	JProgressBar memoryProgressBar;
 
 	JSlider delaySlider, lengthSlider, countSlider, quantumSlider;
 
@@ -120,15 +121,21 @@ public class CPUSchedulerFrame extends JFrame implements ActionListener {
 		JPanel bottomRow = new JPanel();
 		bottomRow.setLayout(new FlowLayout(FlowLayout.CENTER));
 		bottomRow.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		
+		JPanel memoryBarRow = new JPanel();
+		memoryBarRow.setLayout(new FlowLayout(FlowLayout.CENTER));
+		memoryBarRow.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
 		// topRow.add(statusBar,"North");
 		topRow.add(queuePanel, "North");
+		
+		memoryBarRow.add(memoryProgressBar);
 
 		middleRow.add(cpuTimePanel);
 		middleRow.add(responseSP);
 		middleRow.add(turnSP);
 		middleRow.add(waitSP);
-
+		
 		// bottomRow.add(middleRow);
 		bottomRow.add(startCB);
 		bottomRow.add(new JLabel("Quantum"));
@@ -137,6 +144,7 @@ public class CPUSchedulerFrame extends JFrame implements ActionListener {
 		bottomRow.add(memoryField);
 
 		masterPanel.add(topRow);
+		masterPanel.add(memoryBarRow);
 		masterPanel.add(middleRow);
 		masterPanel.add(bottomRow);
 
@@ -228,7 +236,15 @@ public class CPUSchedulerFrame extends JFrame implements ActionListener {
 				+ "<LI><B>PRI</B> Priority Weighting</LI>" + "</ul>"
 				+ "</html>");
 		algolLbl.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 20));
-
+		
+		
+		memoryProgressBar = new JProgressBar(SwingConstants.HORIZONTAL);
+		memoryProgressBar.setMinimum(0);
+		memoryProgressBar.setMaximum(100);
+		memoryProgressBar.setValue(100);
+		memoryProgressBar.setAlignmentX(CENTER_ALIGNMENT);
+		memoryProgressBar.setPreferredSize(new Dimension(500, 100));
+		memoryProgressBar.setToolTipText("A visualization of the available amount of memory.");
 	}
 
 	/**
@@ -278,6 +294,8 @@ public class CPUSchedulerFrame extends JFrame implements ActionListener {
 			{
 				p.setMemoryCapacity(cpu.getTotalMemory(), cpu.getAvailableMemory());
 			}
+			double memoryPercent = cpu.getTotalMemory() == 0 ? 1.0 : Math.min(1, Math.max(0, cpu.getAvailableMemory() / (double)cpu.getTotalMemory()));
+			memoryProgressBar.setValue((int)Math.round(100 * memoryPercent));
 			repaint();
 		}
 		/*
