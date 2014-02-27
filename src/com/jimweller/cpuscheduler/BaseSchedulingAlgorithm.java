@@ -49,9 +49,19 @@ public abstract class BaseSchedulingAlgorithm implements SchedulingAlgorithm {
     	this.quantum = quantum;
     }
     
+    public int getQuantum()
+    {
+    	return quantum;
+    }
+    
     public void setPreemptive(boolean preemptive)
     {
     	this.preemptive = preemptive;
+    }
+    
+    public boolean getPreemptive()
+    {
+    	return preemptive;
     }
 
     /** Returns true if the current job is finished or there is no such job. */

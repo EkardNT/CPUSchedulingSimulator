@@ -20,7 +20,7 @@ public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm
     RoundRobinSchedulingAlgorithm() {
     	processes = new LinkedList<Process>();
     }
-    
+        
     public boolean supportsQuantization()
     {
     	return true;

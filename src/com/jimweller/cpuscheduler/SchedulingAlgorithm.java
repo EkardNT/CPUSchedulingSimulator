@@ -39,6 +39,8 @@ public interface SchedulingAlgorithm {
     /** Configures algorithm quantum setting, if quantization is supported. */
     public void setQuantum(int quantum);
     
+    public int getQuantum();
+    
     /** Indicates whether the scheduling algorithm supports preemption.
      * If this is true then the runtime will configure the algorithm's
      * preemption setting by calling setPreemption() based on user input,
@@ -47,4 +49,6 @@ public interface SchedulingAlgorithm {
     
     /** Configures algorithm preemption setting, if preemption is supported. */
     public void setPreemptive(boolean preemptive);
+    
+    public boolean getPreemptive();
 }

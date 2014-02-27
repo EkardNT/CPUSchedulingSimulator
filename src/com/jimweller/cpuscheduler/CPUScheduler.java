@@ -486,7 +486,11 @@ public class CPUScheduler {
 		try
 		{
 			arrivedScheduler = (SchedulingAlgorithm)newAlgoClass.newInstance();
+			arrivedScheduler.setPreemptive(algo.getPreemptive());
+			arrivedScheduler.setQuantum(algo.getQuantum());
 			executingScheduler = (SchedulingAlgorithm)newAlgoClass.newInstance();
+			executingScheduler.setPreemptive(algo.getPreemptive());
+			executingScheduler.setQuantum(algo.getQuantum());			
 		}
 		catch(Exception e) // Ugh
 		{
@@ -629,8 +633,12 @@ public class CPUScheduler {
 	 */
 	public void resetAlgorithm() {
 		Class<? extends SchedulingAlgorithm> theAlg = arrivedScheduler.getClass();
-		try {
-			setAlgorithm(theAlg.newInstance());
+		try
+		{
+			SchedulingAlgorithm newAlg = theAlg.newInstance();
+			newAlg.setPreemptive(arrivedScheduler.getPreemptive());
+			newAlg.setQuantum(arrivedScheduler.getQuantum());
+			setAlgorithm(newAlg);
 		} catch (Exception e) {
 			System.out.println("Error creating new algorithm!");
 		}

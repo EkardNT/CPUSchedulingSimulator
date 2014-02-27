@@ -3,16 +3,15 @@ package com.jimweller.cpuscheduler;
 public class MultiLevelPriotitySchedulingAlgorithm extends BaseSchedulingAlgorithm 
 {
 	private final RoundRobinSchedulingAlgorithm level1Queue, level2Queue;
-	private final FCFSSchedulingAlgorithm level3Queue;
+	private final RoundRobinSchedulingAlgorithm level3Queue;
 	private SchedulingAlgorithm activeJobQueue;
 	
 	public MultiLevelPriotitySchedulingAlgorithm()
 	{
 		level1Queue = new RoundRobinSchedulingAlgorithm();
-		level1Queue.setQuantum(10);
 		level2Queue = new RoundRobinSchedulingAlgorithm();
-		level2Queue.setQuantum(2 * level1Queue.quantum);
-		level3Queue = new FCFSSchedulingAlgorithm();
+		level3Queue = new RoundRobinSchedulingAlgorithm();
+		setQuantum(10);
 	}
 	
 	public boolean supportsQuantization()
@@ -43,7 +42,7 @@ public class MultiLevelPriotitySchedulingAlgorithm extends BaseSchedulingAlgorit
 		if(activeJob != null && activeJob.equals(p))
 		{
 			activeJobQueue.removeJob(activeJob);
-			switchActiveJob(null);
+			setActiveJob(null);
 			return true;
 		}
 		return level1Queue.removeJob(p) 
@@ -57,29 +56,13 @@ public class MultiLevelPriotitySchedulingAlgorithm extends BaseSchedulingAlgorit
 		level1Queue.transferJobsTo(otherAlg);
 		level2Queue.transferJobsTo(otherAlg);
 		level3Queue.transferJobsTo(otherAlg);
-		switchActiveJob(null);
+		setActiveJob(null);
 	}
 
 	public Process getNextJob(long currentTime)
 	{
-		Process potential = getJobFromLowestQueue(currentTime);
-		
-		if(activeJob == null)
-			switchActiveJob(potential);
-		else if(activeJob.isFinished())
-			switchActiveJob(potential);
-		else if(preemptive && potential != null)
-		{
-			SchedulingAlgorithm potentialQueue = getQueue(potential);
-			
-			// Preempt the active job if the schedulers are different
-			// and the potential job's priority is lower than the active job's.
-			if(activeJobQueue != potentialQueue && potential.getPriorityWeight() < activeJob.getPriorityWeight())
-			{
-				switchActiveJob(potential);
-			}
-		}
-		
+		if(activeJob == null || activeJob.isFinished() || preemptive)
+			setActiveJob(getJobFromLowestQueue(currentTime));
 		return activeJob;
 	}
 
@@ -110,7 +93,7 @@ public class MultiLevelPriotitySchedulingAlgorithm extends BaseSchedulingAlgorit
 		return level3Queue.getNextJob(currentTime);
 	}
 	
-	private void switchActiveJob(Process nextActiveJob)
+	private void setActiveJob(Process nextActiveJob)
 	{
 		activeJob = nextActiveJob;
 		activeJobQueue = nextActiveJob == null ? null : getQueue(nextActiveJob);
