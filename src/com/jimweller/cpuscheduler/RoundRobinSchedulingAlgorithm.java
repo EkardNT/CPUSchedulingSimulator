@@ -17,7 +17,8 @@ public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm
     // Time at which the active job started its quantum.
     private long activeStartTime;
 
-    RoundRobinSchedulingAlgorithm() {
+    public RoundRobinSchedulingAlgorithm()
+    {
     	processes = new LinkedList<Process>();
     }
         
@@ -27,13 +28,15 @@ public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm
     }
 
     /** Add the new job to the correct queue. */
-    public void addJob(Process p) {
+    public void addJob(Process p) 
+    {
     	if(p != null)
     		processes.add(p);
     }
 
     /** Returns true if the job was present and was removed. */
-    public boolean removeJob(Process p) {
+    public boolean removeJob(Process p)
+    {
     	if(activeJob != null && activeJob.equals(p))
     	{
     		activeJob = null;
@@ -44,7 +47,8 @@ public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm
 
     /** Transfer all the jobs in the queue of a SchedulingAlgorithm to another, such as
 	when switching to another algorithm in the GUI */
-    public void transferJobsTo(SchedulingAlgorithm otherAlg) {
+    public void transferJobsTo(SchedulingAlgorithm otherAlg) 
+    {
     	otherAlg.addJob(activeJob);
     	for(Process p : processes)
     		otherAlg.addJob(p);
@@ -56,7 +60,8 @@ public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm
      * Returns the next process that should be run by the CPU, null if none
      * available.
      */
-    public Process getNextJob(long currentTime) {
+    public Process getNextJob(long currentTime) 
+    {
     	// If there's no currently active job, don't worry about
     	// timing, just get the next available job if any.
     	if(activeJob == null)
@@ -77,6 +82,7 @@ public class RoundRobinSchedulingAlgorithm extends BaseSchedulingAlgorithm
     	// in the scheduler.
     	else if(currentTime - activeStartTime >= quantum)
     	{
+    		Process oldJob = activeJob;
     		processes.add(activeJob);
     		activeJob = processes.poll();
     		activeStartTime = currentTime;

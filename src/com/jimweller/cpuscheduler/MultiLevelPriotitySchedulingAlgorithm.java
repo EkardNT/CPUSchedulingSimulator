@@ -2,15 +2,14 @@ package com.jimweller.cpuscheduler;
 
 public class MultiLevelPriotitySchedulingAlgorithm extends BaseSchedulingAlgorithm 
 {
-	private final RoundRobinSchedulingAlgorithm level1Queue, level2Queue;
-	private final RoundRobinSchedulingAlgorithm level3Queue;
+	private final SchedulingAlgorithm level1Queue, level2Queue, level3Queue;
 	private SchedulingAlgorithm activeJobQueue;
 	
 	public MultiLevelPriotitySchedulingAlgorithm()
 	{
 		level1Queue = new RoundRobinSchedulingAlgorithm();
 		level2Queue = new RoundRobinSchedulingAlgorithm();
-		level3Queue = new RoundRobinSchedulingAlgorithm();
+		level3Queue = new FCFSSchedulingAlgorithm();
 		setQuantum(10);
 	}
 	

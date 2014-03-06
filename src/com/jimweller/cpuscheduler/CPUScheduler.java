@@ -181,7 +181,8 @@ public class CPUScheduler {
 	 * Use the appropriate scheduler to choose the next process. Then dispatch
 	 * the process.
 	 */
-	void Schedule() {
+	public void Schedule() 
+	{
 		Process potential = arrivedScheduler.getNextJob(currentTime);
 		// If its already started, then we know it has already reserved its
 		// memory.
@@ -242,7 +243,7 @@ public class CPUScheduler {
 		int i = 0;
 
 		for (i = 0; i < allProcs.size(); i++) {
-			p = (Process) allProcs.get(i);
+			p =  allProcs.get(i);
 			if (p.isStarted()) {
 				startedCount++;
 				int responded = (int) p.getResponseTime();
@@ -275,7 +276,7 @@ public class CPUScheduler {
 		}
 
 		for (i = 0; i < allProcs.size(); i++) {
-			p = (Process) allProcs.get(i);
+			p =  allProcs.get(i);
 
 			if (p.isFinished()) {
 				finishedCount++;
@@ -334,7 +335,7 @@ public class CPUScheduler {
 	void LoadReadyQueue() {
 		Process p;
 		for (int i = 0; i < jobQueue.size(); i++) {
-			p = (Process) jobQueue.get(i);
+			p =  jobQueue.get(i);
 			if (p.getArrivalTime() == currentTime) {
 				readyQueue.add(p);
 				arrivedScheduler.addJob(p);
@@ -348,7 +349,7 @@ public class CPUScheduler {
 	void PurgeReadyQueue() {
 		Process p;
 		for (int i = 0; i < readyQueue.size(); i++) {
-			p = (Process) readyQueue.get(i);
+			p =  readyQueue.get(i);
 			if (p.isFinished() == true) {
 				readyQueue.remove(i);
 				arrivedScheduler.removeJob(p);
@@ -359,11 +360,14 @@ public class CPUScheduler {
 	}
 
 	/** Get rid of jobs that are done */
-	void PurgeJobQueue() {
+	void PurgeJobQueue() 
+	{
 		Process p;
-		for (int i = 0; i < jobQueue.size(); i++) {
-			p = (Process) jobQueue.get(i);
-			if (p.isFinished() == true) {
+		for (int i = 0; i < jobQueue.size(); i++) 
+		{
+			p = jobQueue.get(i);
+			if (p.isFinished())
+			{
 				jobQueue.remove(i);
 				arrivedScheduler.removeJob(p);
 				executingScheduler.removeJob(p);
@@ -399,7 +403,7 @@ public class CPUScheduler {
 	public void printReadyQueue() {
 		Process p;
 		for (int i = 0; i < readyQueue.size(); i++) {
-			p = (Process) readyQueue.get(i);
+			p =  readyQueue.get(i);
 			p.print();
 			System.out.println("---------------");
 		}
@@ -409,7 +413,7 @@ public class CPUScheduler {
 	public void printTable() {
 		Process p;
 		for (int i = 0; i < allProcs.size(); i++) {
-			p = (Process) allProcs.get(i);
+			p =  allProcs.get(i);
 			p.println();
 		}
 	}
@@ -425,7 +429,7 @@ public class CPUScheduler {
 				+ "\"Response\"," + "\"Turnaround\"");
 
 		for (int i = 0; i < allProcs.size(); i++) {
-			p = (Process) allProcs.get(i);
+			p =  allProcs.get(i);
 			p.printCSV();
 		}
 		NumberFormat nf = NumberFormat.getInstance();
@@ -455,7 +459,7 @@ public class CPUScheduler {
 				+ "\"Turnaround\"");
 
 		for (int i = 0; i < allProcs.size(); i++) {
-			p = (Process) allProcs.get(i);
+			p =  allProcs.get(i);
 			p.printCSV(pw);
 		}
 		NumberFormat nf = NumberFormat.getInstance();
@@ -675,7 +679,7 @@ public class CPUScheduler {
 		sDevTurn = 0;
 
 		for (int i = 0; i < allProcs.size(); i++) {
-			p = (Process) allProcs.get(i);
+			p =  allProcs.get(i);
 			p.restore();
 		}
 
