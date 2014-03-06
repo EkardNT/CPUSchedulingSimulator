@@ -62,12 +62,15 @@ public class MultiLevelPriotitySchedulingAlgorithm extends BaseSchedulingAlgorit
 	{
 		if(activeJob == null || activeJob.isFinished() || preemptive)
 			setActiveJob(getJobFromLowestQueue(currentTime));
-		return activeJob;
+		// THIS WAS THE BUGGY VERSION:
+		// return activejob;
+		// THIS IS THE CORRECT VERSION:
+		return activeJob = activeJobQueue.getNextJob(currentTime);
 	}
 
 	public String getName() 
 	{
-		return "Multilevel Priority";
+		return "Multi-Level Priority";
 	}
 	
 	private SchedulingAlgorithm getQueue(Process p)
