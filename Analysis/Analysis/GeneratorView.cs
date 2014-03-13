@@ -89,7 +89,7 @@ namespace Analysis
 				return false;
 			}
 
-			if (!int.TryParse(burstTimeMeanTextBox.Text, out parameters.BatchCount))
+			if (!float.TryParse(burstTimeMeanTextBox.Text, out parameters.BurstTimeMean))
 			{
 				MessageBox.Show("Invalid burst time mean value.", "Invalid Input", MessageBoxButtons.OK);
 				return false;
@@ -105,6 +105,12 @@ namespace Analysis
 			if (!int.TryParse(processCountTextBox.Text, out parameters.ProcessCount))
 			{
 				MessageBox.Show("Invalid process per batch value.", "Invalid Input", MessageBoxButtons.OK);
+				return false;
+			}
+
+			if (!int.TryParse(batchCountTextBox.Text, out parameters.BatchCount))
+			{
+				MessageBox.Show("Invalid batch count value.", "Invalid Input", MessageBoxButtons.OK);
 				return false;
 			}
 
