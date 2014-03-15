@@ -158,18 +158,31 @@ public class CPUScheduler {
 		activeJob = null;
 		Process proc = null;
 		String s = null;
-		long b = 0, d = 0, p = 0, memory = 0;
+		long burst = 0, delay = 0, priority = 0, memory = 0;
 		try {
 			BufferedReader input = new BufferedReader(new FileReader(filename));
 			while ((s = input.readLine()) != null) {
 				StringTokenizer st = new StringTokenizer(s);
-				b = Long.parseLong(st.nextToken());
-				d = Long.parseLong(st.nextToken());
-				p = Long.parseLong(st.nextToken());
-				memory = Long.parseLong(st.nextToken());
-				proc = new Process(b, d, p, memory);
+				burst = Long.parseLong(st.nextToken());
+				if(burst < 1)
+					burst = 1;
+				else if(burst > Process.MAX_BURST_TIME)
+					burst = Process.MAX_BURST_TIME;
+				delay = Long.parseLong(st.nextToken());
+				if(delay < 0)
+					delay = 0;
+				priority = Long.parseLong(st.nextToken());
+				if(priority < 0)
+					priority = 0;
+				else if(priority > 9)
+					priority = 9;
+				memory = st.hasMoreTokens() ? Long.parseLong(st.nextToken()) : 0;
+				if(memory < 0)
+					memory = 0;
+				proc = new Process(burst, delay, priority, memory);
 				allProcs.add(proc);
 			}
+			input.close();
 
 		} catch (FileNotFoundException fnfe) {
 		} catch (IOException ioe) {
