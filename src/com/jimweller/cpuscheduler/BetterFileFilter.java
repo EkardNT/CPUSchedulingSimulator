@@ -56,7 +56,10 @@ import javax.swing.filechooser.*;
  *     chooser.showOpenDialog(this);
  *</pre>
  * @version 1.7 04/23/99
- * @author Jeff Dinkins
+ * CS 143A - Group 8
+ * @author: Drake Tetreault 35571095
+ * @author: Virginia McMinn 55438064
+ * @author: Ling Han Meng 72933055
  */
 public class BetterFileFilter extends FileFilter {
 

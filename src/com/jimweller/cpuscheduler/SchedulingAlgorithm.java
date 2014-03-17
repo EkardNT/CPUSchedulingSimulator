@@ -4,7 +4,10 @@
  *
  * Adapted for CS 143A - Principles of Operating Systems
  * 
- * @author: Kyle Benson
+ * CS 143A - Group 8
+ * @author: Drake Tetreault 35571095
+ * @author: Virginia McMinn 55438064
+ * @author: Ling Han Meng 72933055
  * Winter 2013
  *
  */

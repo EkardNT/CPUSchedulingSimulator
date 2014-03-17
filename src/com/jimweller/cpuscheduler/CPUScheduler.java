@@ -11,7 +11,10 @@ import java.text.*;
  * automatically in one fell swoop, or the programmer can imcrement on a step by
  * step basis.
  * 
- * @author Jim Weller
+ * CS 143A - Group 8
+ * @author: Drake Tetreault 35571095
+ * @author: Virginia McMinn 55438064
+ * @author: Ling Han Meng 72933055
  * @version 0.50
  */
 

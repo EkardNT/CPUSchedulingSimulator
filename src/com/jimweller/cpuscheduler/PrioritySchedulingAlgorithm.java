@@ -2,7 +2,10 @@
  * 
  * A single-queue priority scheduling algorithm.
  *
- * @author: Kyle Benson
+ * CS 143A - Group 8
+ * @author: Drake Tetreault 35571095
+ * @author: Virginia McMinn 55438064
+ * @author: Ling Han Meng 72933055
  * Winter 2013
  *
  */
@@ -17,7 +20,7 @@ public class PrioritySchedulingAlgorithm extends BasePrioritizedSchedulingAlgori
     {
     	super(new Comparator<Process>() {
 			public int compare(Process p1, Process p2) {
-				return (int)(p2.getPriorityWeight() - p1.getPriorityWeight());
+				return (int)(p1.getPriorityWeight() - p2.getPriorityWeight());
 			}
 		});
     }

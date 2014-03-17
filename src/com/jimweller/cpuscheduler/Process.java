@@ -6,7 +6,10 @@ import java.util.Random;
 /** 
  *   An aggregate data type to represent a process to schedule. It will
  *   maintain all of it's state internally.
- *   @author Jim Weller
+ * CS 143A - Group 8
+ * @author: Drake Tetreault 35571095
+ * @author: Virginia McMinn 55438064
+ * @author: Ling Han Meng 72933055
  */
 public class Process{
     
